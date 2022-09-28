@@ -50,9 +50,9 @@ class UserController {
 
             user.loadFromJSON(result);
 
-            this.getTr(user, tr);
+            user.save();
 
-            this.addEventsTr(tr);
+            this.getTr(user, tr);
 
             this.updateCount();
 
@@ -91,13 +91,14 @@ class UserController {
 
                     values.photo = content;
 
-                    this.insert(values);
+                    values.save();
 
                     this.addLine(values);
+                    
+                    btn.disabled = false;
 
                     this.formEl.reset();
 
-                    btn.disabled = false;
 
                 },
                 (e) => {
@@ -195,23 +196,9 @@ class UserController {
             );
     }
 
-    getUsersStorage(){
-
-        let users = [];
-
-        if(localStorage.getItem("users")){
-
-            users = JSON.parse(localStorage.getItem("users"));
-
-        }
-
-        return users;
-
-    }
-
     selectAll(){
 
-        let users = this.getUsersStorage();
+        let users = User.getUsersStorage();
 
         users.forEach(dataUser=>{
 
@@ -222,17 +209,6 @@ class UserController {
             this.addLine(user);
         })
 
-
-    }
-
-
-    insert(data){
-
-        let users = this.getUsersStorage();
-
-        users.push(data);
-
-        localStorage.setItem("users", JSON.stringify(users));
 
     }
 
@@ -260,7 +236,7 @@ class UserController {
         <td>${Utils.dateFormat(dataUser.register)}</td>
         <td>
             <button type="button" class="btn btn-primary btn-edit btn-xs btn-flat">Editar</button>
-            <button type="button" class="btn btn-danger btn-delete btn-xs btn-flat">Excluir</button>
+            <button type="button" class="btn btn-danger btn-delet btn-xs btn-flat">Excluir</button>
         </td>
   `;
 
@@ -272,10 +248,16 @@ class UserController {
 
     addEventsTr(tr){
 
-        tr.querySelector(".btn-delete").addEventListener("click", e => {
+        tr.querySelector(".btn-delet").addEventListener("click", e => {
 
             if (confirm("Deseja realmente excluir?")) {
                
+                let user = new User();
+
+                user.loadFromJSON(JSON.parse(tr.dataset.user));
+
+                user.remove();
+
                 tr.remove();
 
                 this.updateCount();
